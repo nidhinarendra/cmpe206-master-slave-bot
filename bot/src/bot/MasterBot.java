@@ -1,4 +1,4 @@
-package bot;
+//package bot;
 /*		
 		// create a dictionary with key = SourcePortNumber and value = SlaveHostName, IPAddress, SourcePortNumber, RegistrationDate
 		
@@ -37,9 +37,9 @@ public class MasterBot {
 
 		Integer masterport;
 		masterport = Integer.parseInt(args[1]);
+		
 		try{
 			ServerSocket listener = new ServerSocket(masterport);
-
 			while (true)
 			{
 				Socket client_socket = listener.accept();
@@ -53,12 +53,7 @@ public class MasterBot {
 		catch (Exception e){
 			System.out.println(e);
 		}
-
-
 	}
-   
-    
-    
 }
        
 
