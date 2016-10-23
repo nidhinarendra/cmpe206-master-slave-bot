@@ -28,7 +28,13 @@ public class SlaveBot {
 			PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(
 					new InputStreamReader(client_socket.getInputStream()));
-			out.println("Hi from nidhi as a slave");
+			String ip=(((InetSocketAddress) client_socket.getRemoteSocketAddress()).getAddress()).toString().replace("/","");
+		    //Integer port_int = (InetSocketAddress) client_socket.getLocalPort().getPort();
+		    
+		    Integer port_int = (Integer) (client_socket.getLocalPort());
+			out.println(ip +"\t"+ port_int);
+			
+			// send slave_port_number and slave_ip
 		}
 		catch (Exception e){
 			System.out.println(e);

@@ -25,7 +25,11 @@ public class MasterBot {
 				Socket client_socket = listener.accept();
 				PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
+				//To get the server's response, EchoClient reads from the BufferedReader object stdIn,
+				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 				System.out.println("Slave says:" + in.readLine());
+				
+				// extract the slave_ip and slave_port
 				storeSlaveData();
 			}    
 
