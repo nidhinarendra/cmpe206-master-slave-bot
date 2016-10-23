@@ -1,12 +1,23 @@
-//package bot;
+package bot;
 
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 
+
 public class MasterBot {
 
+	static class SlaveData{                                                                                               
+        public int port;                                                                                                  
+        public String ip;                                                                                                 
+                                                                                                                          
+        public SlaveData(String ip, int port) {                                                                           
+            this.port = port;                                                                                             
+            this.ip = ip;                                                                                                 
+        }                                                                                                                 
+    }
+	
 		
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2)
@@ -25,9 +36,16 @@ public class MasterBot {
 				Socket client_socket = listener.accept();
 				PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
+				
 				//To get the server's response, EchoClient reads from the BufferedReader object stdIn,
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-				System.out.println("Slave says:" + in.readLine());
+				
+				String dataRecived = in.readLine();
+				System.out.println("Slave says:" + dataRecived);
+		
+			
+				extractSlaveData(dataRecived);
+
 				
 				// extract the slave_ip and slave_port
 				storeSlaveData();
@@ -55,6 +73,22 @@ public class MasterBot {
 	      }
 		
 	}
+	
+	public static void extractSlaveData(String slaveDataRecieved){
+		String delims = ",";
+		StringTokenizer st = new StringTokenizer(slaveDataRecieved, delims);
+		while (st.hasMoreElements()) {
+			 SlaveData slv1 = new SlaveData((String)st.nextElement(), Integer.parseInt((String) st.nextElement()));
+			System.out.println("StringTokenizer Output: " + st.nextElement());
+		}
+	}
+	
+	/*
+	 *         SlaveData slv1 = new SlaveData(port_int, ip);
+	        
+	        System.out.println("ip is:" + ip + "port is" + port_int + "slvdata object is" + slv1.toString());
+
+	 */
 	
 }
        

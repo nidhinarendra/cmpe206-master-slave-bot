@@ -8,6 +8,8 @@ import java.util.*;
  * Trivial client for the date server.
  */
 public class SlaveBot {
+	
+
 	public static void main(String[] args) throws Exception {
 		if(args.length != 4)
 		{
@@ -29,12 +31,14 @@ public class SlaveBot {
 			BufferedReader in = new BufferedReader(
 					new InputStreamReader(client_socket.getInputStream()));
 			String ip=(((InetSocketAddress) client_socket.getRemoteSocketAddress()).getAddress()).toString().replace("/","");
-		    //Integer port_int = (InetSocketAddress) client_socket.getLocalPort().getPort();
-		    
-		    Integer port_int = (Integer) (client_socket.getLocalPort());
-			out.println(ip +"\t"+ port_int);
-			
-			// send slave_port_number and slave_ip
+			//Integer port_int = (InetSocketAddress) client_socket.getLocalPort().getPort();
+
+			Integer port_int = (Integer) (client_socket.getLocalPort());
+			System.out.println(ip + port_int);
+			out.println(ip +","+ port_int);
+
+			// send slave_port_number and slave_ip as an object
+			// create the slave Object                                                                                            
 		}
 		catch (Exception e){
 			System.out.println(e);
