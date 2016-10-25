@@ -1,4 +1,4 @@
-package bot;
+//package bot;
 
 
 import java.io.*;
@@ -13,6 +13,7 @@ public class MasterBot {
 	static class SlaveData{                                                                                               
 		public String port;                                                                                                  
 		public String ip; 
+		public String slavehost;
 		public Date registerDate;
 		public flag status;
 
@@ -29,12 +30,17 @@ public class MasterBot {
 	}
 
 	public static void main(String[] args) throws Exception {
+	/*	Scanner scanner = new Scanner( System.in );
+	    System.out.print( "Specify the command which needs to be executed: " );
+	    String input = scanner.nextLine();
+	    System.out.println( "input = " + input );*/
+
 		if (args.length != 2)
 		{
 			System.out.println("Usage: MasterBot -p portnumber");
 			System.exit(0);
 		}
-
+		
 		Integer masterport;
 		masterport = Integer.parseInt(args[1]);
 
@@ -42,7 +48,10 @@ public class MasterBot {
 			ServerSocket listener = new ServerSocket(masterport);
 			while (true)
 			{
-				Socket client_socket = listener.accept();
+				Scanner scanner = new Scanner(System.in);
+				System.out.print("- ");
+				String usercommand = scanner.next();	
+				Socket client_socket = listener.accept();				
 				PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
 
@@ -51,17 +60,7 @@ public class MasterBot {
 
 				String dataRecived = in.readLine();
 				System.out.println("Slave says:" + dataRecived);
-
-				/*Console cons;
-				 char[] passwd;
-				 if ((cons = System.console()) != null &&
-				     (passwd = cons.readPassword("[%s]", "Password:")) != null) {
-				     System.out.println("Console opened");
-				     java.util.Arrays.fill(passwd, ' ');
-				 }*/
-				//Runtime.getRuntime().exec("/usr/bin/open -a Terminal /Documents/fall2016/cmpe206/assignment/cmpe206-master-slave-bot/bot/src/bot");
-
-
+				out.println("Thanks!!!");
 				extractSlaveData(dataRecived);
 			}    
 
@@ -88,9 +87,6 @@ public class MasterBot {
 
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
-
-			//System.out.print(uniqueStr + "\t" + slaveObj.ip + "\t" + slaveObj.port + "\t" + slaveObj.registerDate);
-			//System.out.println(slaveData.getValue());
 		}
 
 	}
@@ -110,7 +106,7 @@ public class MasterBot {
 		while (iter.hasNext()) {
 			Entry<String, SlaveData> entry = iter.next();
 			SlaveData localObjSlave = entry.getValue();
-			if (localObjSlave.status == flag.connected){
+			if (localObjSlave.status == flag.registred){
 				System.out.print(localObjSlave.ip + "\t" + localObjSlave.port + "\t" + localObjSlave.registerDate);
 			}
 		}
@@ -127,11 +123,11 @@ public class MasterBot {
 				localObjSlaveData.status = flag.connected;
 			}
 			else{
-				System.out.println("Slave is not registered!!");
+				System.err.println("Slave is not registered!!");
 			}
 		}
 		else{
-			System.out.println("Slave is not registered!!");
+			System.err.println("Slave is not registered!!");
 		}
 	}
 
@@ -148,11 +144,11 @@ public class MasterBot {
 				System.out.println("The slave is not connected");
 			}
 			else{
-				System.out.println("Slave is not registered!!");
+				System.err.println("Slave is not registered!!");
 			}
 		}
 		else{
-			System.out.println("Slave is not registered!!");
+			System.err.println("Slave is not registered!!");
 		}
 	}
 
