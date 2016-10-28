@@ -18,13 +18,14 @@ public class SlaveBot implements Runnable {
 		public String port;                                                                                                  
 		public String targetHost; 
 		public String numConnections;
+		public Socket[] arrSoc;
 
 		public targetData(String action, String targetHost, String port, String numConnections) {                                                                           
 			this.port = port;                                                                                             
 			this.targetHost = targetHost;   
 			this.numConnections = numConnections;
 			this.action = action;
-			
+
 		}                                                                                                                 
 	}
 	public void run() {
@@ -32,7 +33,7 @@ public class SlaveBot implements Runnable {
 			while(true)
 			{
 				System.out.println("enter");
-				String dataFromMaster = "connect 54.173.226.204 8080 5";
+				String dataFromMaster = "connect 127.0.0.1 2000 5";
 				extractTargetData(dataFromMaster);
 				Socket listener = slavePort.accept();
 				PrintWriter out = new PrintWriter(listener.getOutputStream(), true);
@@ -40,7 +41,7 @@ public class SlaveBot implements Runnable {
 
 				//To get the server's response, EchoClient reads from the BufferedReader object stdIn,
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-				
+
 			}        
 		}
 		catch (Exception e){
@@ -65,15 +66,21 @@ public class SlaveBot implements Runnable {
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
 		}
-		//performAction();
-		
+
+		if (targetObj.action.contentEquals("connect")){
+			performConnect(targetObj.targetHost, targetObj.port, targetObj.numConnections, targetObj.arrSoc);
+		}
+		else if (targetObj.action.contentEquals("disconnect")){
+			performDisconnect(targetObj.targetHost, targetObj.port, targetObj.arrSoc);
+		}
+
 	}
 
 	public static String concatinatedData(String ip, String port){
 		String concatinate = ip + port;
 		return concatinate;
 	}
-	
+
 	public static Integer registerSlave(String hostname, Integer masterport){
 		Socket client_socket;
 		try{
@@ -98,12 +105,57 @@ public class SlaveBot implements Runnable {
 
 	}
 
-public static void performAction(){
+	public static void performConnect(String ip, String port, String numConnection, Socket[] arrSoc){
+		String conKey = concatinatedData(ip, port);
+		Integer numConnectionInt = Integer.parseInt(numConnection);
+		Integer portInt = Integer.parseInt(port);
+		arrSoc = new Socket[numConnectionInt];
+		if (targetDataMap.containsKey(conKey)){
+			try{
+				for(int i = 0; i <= arrSoc.length; i++){
+					arrSoc[i] = new Socket(ip, portInt);
+					System.out.println(arrSoc[i]);
+				}
+				targetData obj = targetDataMap.get(conKey);
+				obj.arrSoc = arrSoc;
+			}
+			catch(Exception e){
+			}
+		}
+		else{
+			System.out.println("Error Connecting to host");
+		}
+
+	}
+
+	public static void performDisconnect(String ip, String port, Socket[] arrSoc) {
+		String conKey = concatinatedData(ip, port);
+		Integer portInt = Integer.parseInt(port);
+		targetData obj = targetDataMap.get(conKey);
+
+		if (targetDataMap.containsKey(conKey)){
+			try{
+				for(int i = 0; i<= obj.arrSoc.length; i++){
+					Socket deleteSoc = obj.arrSoc[i];
+					deleteSoc.close();				
+				}
+				targetDataMap.remove(conKey);
+				
+			}
+			catch(Exception e){
+
+			}
 	
+		}
+		else {
+			
+		}
 	}
 	
 
-	
+
+
+
 
 
 	public static void main(String[] args) throws Exception {
@@ -121,14 +173,10 @@ public static void performAction(){
 
 		for (Map.Entry<String, targetData> entry : targetDataMap.entrySet()) {
 			System.out.println(entry.getKey() +" : " +entry.getValue().action + " : "+ entry.getValue().targetHost + " : " + entry.getValue().port + " : " + entry.getValue().numConnections);
+			System.out.println("\nFor the key : " + entry.getKey() + "The array saved is" + entry.getValue().arrSoc);
 		}
-		
-		
-
-	}
 
 
-
-	
+	}	
 
 }
