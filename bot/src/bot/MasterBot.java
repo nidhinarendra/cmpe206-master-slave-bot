@@ -7,8 +7,10 @@ import java.util.*;
 import java.util.Map.Entry;
 
 
-public class MasterBot {
+public class MasterBot implements Runnable {
 
+	static ServerSocket listener;
+	static Integer masterPort;
 	static Map<String, SlaveData> slaveDataMap = new HashMap <String,SlaveData> ();
 	static class SlaveData{                                                                                               
 		public String port;                                                                                                  
@@ -25,33 +27,18 @@ public class MasterBot {
 		}                                                                                                                 
 	}
 
+
 	public enum flag{
 		registred, connected, disconnected
 	}
 
-	public static void main(String[] args) throws Exception {
-	/*	Scanner scanner = new Scanner( System.in );
-	    System.out.print( "Specify the command which needs to be executed: " );
-	    String input = scanner.nextLine();
-	    System.out.println( "input = " + input );*/
 
-		if (args.length != 2)
-		{
-			System.out.println("Usage: MasterBot -p portnumber");
-			System.exit(0);
-		}
-		
-		Integer masterport;
-		masterport = Integer.parseInt(args[1]);
-
+	public void run() {
 		try{
-			ServerSocket listener = new ServerSocket(masterport);
+
 			while (true)
 			{
-				Scanner scanner = new Scanner(System.in);
-				System.out.print("- ");
-				String usercommand = scanner.next();	
-				Socket client_socket = listener.accept();				
+				Socket client_socket = listener.accept();
 				PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
 
@@ -60,23 +47,23 @@ public class MasterBot {
 
 				String dataRecived = in.readLine();
 				System.out.println("Slave says:" + dataRecived);
-				out.println("Thanks!!!");
+				Thread.sleep(4000);
+				//out.println("google.com 8080");
 				extractSlaveData(dataRecived);
-			}    
-
-			//DataInputStream from_slave = new6 DataInputStream(serviceSocket.getInoutStream());
+			}  
 		}
 		catch (Exception e){
 			System.out.println(e);
 		}
 	}
 
+	public static void extractSlaveData(String slaveDataRecieved){
+		String delims = ",";
+		StringTokenizer st = new StringTokenizer(slaveDataRecieved, delims);
 
-	public static String concatinatedData(String ip, String port){
-		String concatinate = ip + port;
-		return concatinate;
+		SlaveData slv1 = new SlaveData((String)st.nextElement(), ((String) st.nextElement()));
+		storeSlaveData(slv1);
 	}
-
 
 	public static void storeSlaveData(SlaveData slaveObj){
 
@@ -88,16 +75,13 @@ public class MasterBot {
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
 		}
-
 	}
 
-	public static void extractSlaveData(String slaveDataRecieved){
-		String delims = ",";
-		StringTokenizer st = new StringTokenizer(slaveDataRecieved, delims);
-
-		SlaveData slv1 = new SlaveData((String)st.nextElement(), ((String) st.nextElement()));
-		storeSlaveData(slv1);
+	public static String concatinatedData(String ip, String port){
+		String concatinate = ip + port;
+		return concatinate;
 	}
+
 
 	public static void list (Map slaveDataMap){
 		Set set = slaveDataMap.entrySet();
@@ -152,7 +136,30 @@ public class MasterBot {
 		}
 	}
 
+
+	public static void main(String[] args) throws Exception {
+
+		if (args.length != 2)
+		{
+			System.out.println("Usage: MasterBot -p portnumber");
+			System.exit(0);
+		}
+
+		masterPort = Integer.parseInt(args[1]);
+		listener = new ServerSocket(masterPort);
+		new Thread(new MasterBot()).start();
+
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("- ");
+		String usercommand = scanner.next();	
+
+		//DataInputStream from_slave = new6 DataInputStream(serviceSocket.getInoutStream());
+	}
+
 }
+
+
+
 
 
 
