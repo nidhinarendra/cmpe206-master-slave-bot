@@ -32,16 +32,12 @@ public class SlaveBot implements Runnable {
 		try{
 			while(true)
 			{
-				System.out.println("enter");
-				String dataFromMaster = "connect 127.0.0.1 2000 5";
-				extractTargetData(dataFromMaster);
 				Socket listener = slavePort.accept();
 				PrintWriter out = new PrintWriter(listener.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(listener.getInputStream()));
-
-				//To get the server's response, EchoClient reads from the BufferedReader object stdIn,
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-
+				String dataFromMaster = in.readLine();
+				extractTargetData(dataFromMaster);
 			}        
 		}
 		catch (Exception e){
@@ -59,19 +55,25 @@ public class SlaveBot implements Runnable {
 	public static void storeTargetData(targetData targetObj){
 
 		String uniqueKey = concatinatedData(targetObj.targetHost, targetObj.port);
-		targetDataMap.put(uniqueKey, targetObj);
-		Set<Entry<String, targetData>> set = targetDataMap.entrySet();
-		Iterator<Entry<String, targetData>> iterator = set.iterator();		
+	
 
+		/*
+		Set<Entry<String, targetData>> set = targetDataMap.entrySet();
+		Iterator<Entry<String, targetData>> iterator = set.iterator();	
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
 		}
+		*/
 
 		if (targetObj.action.contentEquals("connect")){
-			performConnect(targetObj.targetHost, targetObj.port, targetObj.numConnections, targetObj.arrSoc);
+			// go create a object and insert into the hash table value
+			targetDataMap.put(uniqueKey, targetObj);
+			performConnect(targetObj.targetHost, targetObj.port, targetObj.numConnections);
 		}
 		else if (targetObj.action.contentEquals("disconnect")){
-			performDisconnect(targetObj.targetHost, targetObj.port, targetObj.arrSoc);
+			// go get the object from the hash-table
+			targetData objFromHashTable =  targetDataMap.get(uniqueKey);
+			performDisconnect(objFromHashTable.targetHost, objFromHashTable.port);
 		}
 
 	}
@@ -105,21 +107,22 @@ public class SlaveBot implements Runnable {
 
 	}
 
-	public static void performConnect(String ip, String port, String numConnection, Socket[] arrSoc){
+	public static void performConnect(String ip, String port, String numConnection){
 		String conKey = concatinatedData(ip, port);
 		Integer numConnectionInt = Integer.parseInt(numConnection);
 		Integer portInt = Integer.parseInt(port);
-		arrSoc = new Socket[numConnectionInt];
+		targetData obj = targetDataMap.get(conKey);
+		obj.arrSoc = new Socket[numConnectionInt];
 		if (targetDataMap.containsKey(conKey)){
 			try{
-				for(int i = 0; i <= arrSoc.length; i++){
-					arrSoc[i] = new Socket(ip, portInt);
-					System.out.println(arrSoc[i]);
+				for(int i = 0; i < obj.arrSoc.length; i++){
+					obj.arrSoc[i] = new Socket(ip, portInt);
+					System.out.println(obj.arrSoc[i]);
 				}
-				targetData obj = targetDataMap.get(conKey);
-				obj.arrSoc = arrSoc;
+				
 			}
 			catch(Exception e){
+				System.out.println(e);
 			}
 		}
 		else{
@@ -128,7 +131,7 @@ public class SlaveBot implements Runnable {
 
 	}
 
-	public static void performDisconnect(String ip, String port, Socket[] arrSoc) {
+	public static void performDisconnect(String ip, String port) {
 		String conKey = concatinatedData(ip, port);
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
@@ -138,24 +141,19 @@ public class SlaveBot implements Runnable {
 				for(int i = 0; i<= obj.arrSoc.length; i++){
 					Socket deleteSoc = obj.arrSoc[i];
 					deleteSoc.close();				
+					System.out.println("Socket closed" + deleteSoc);
 				}
 				targetDataMap.remove(conKey);
-				
 			}
 			catch(Exception e){
 
 			}
-	
+
 		}
 		else {
-			
+
 		}
 	}
-	
-
-
-
-
 
 
 	public static void main(String[] args) throws Exception {
