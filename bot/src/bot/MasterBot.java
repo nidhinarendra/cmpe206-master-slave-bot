@@ -47,7 +47,7 @@ public class MasterBot implements Runnable {
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 
 				String dataRecived = in.readLine();
-				System.out.println("Slave says:" + dataRecived);
+				//System.out.println("Slave says:" + dataRecived);
 				//out.println("google.com 8080");
 				extractSlaveData(dataRecived);
 			}  
@@ -75,7 +75,7 @@ public class MasterBot implements Runnable {
 
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
-			System.out.println("storing the slave ip: " + slaveObj.ip + " port: " + slaveObj.port);
+			//System.out.println("storing the slave ip: " + slaveObj.ip + " port: " + slaveObj.port);
 		}
 	}
 
@@ -110,10 +110,12 @@ public class MasterBot implements Runnable {
 			}
 			else{
 				System.err.println("Slave is not registered!!");
+				System.exit(-1);
 			}
 		}
 		else{
 			System.err.println("Slave is not registered!!");
+			System.exit(-1);
 		}
 	}
 
@@ -128,13 +130,16 @@ public class MasterBot implements Runnable {
 			}
 			if(localObjSlaveData.status == flag.registred){
 				System.out.println("The slave is not connected");
+				System.exit(-1);
 			}
 			else{
 				System.err.println("Slave is not registered!!");
+				System.exit(-1);
 			}
 		}
 		else{
 			System.err.println("Slave is not registered!!");
+			System.exit(-1);
 		}
 	}
 
@@ -194,6 +199,7 @@ public class MasterBot implements Runnable {
 			}
 			catch(Exception e){
 				System.out.println("Socket could not be created");
+				System.exit(-1);
 			}
 		}
 		
