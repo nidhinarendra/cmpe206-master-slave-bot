@@ -153,7 +153,7 @@ public class MasterBot implements Runnable {
 		new Thread(new MasterBot()).start();
 
 		Scanner scanner = new Scanner(System.in);
-		System.out.print("> ");
+		System.out.print(">");
 		while (!scanner.hasNext("quit")){
 			System.out.print(">");
 			String command = scanner.nextLine();
