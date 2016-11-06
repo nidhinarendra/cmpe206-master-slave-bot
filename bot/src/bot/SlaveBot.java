@@ -175,10 +175,7 @@ public class SlaveBot implements Runnable {
 			}
 
 		}
-		else {
-			System.exit(-1);
-		}
-		//System.out.println("total sockets" + obj.arrSoc.size());
+
 	}
 
 

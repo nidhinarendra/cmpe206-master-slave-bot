@@ -1,4 +1,4 @@
-//package bot;
+package bot;
 
 
 import java.io.*;
@@ -66,6 +66,7 @@ public class MasterBot implements Runnable {
 		storeSlaveData(slv1);
 	}
 
+	// slave registration here 
 	public static void storeSlaveData(SlaveData slaveObj){
 
 		String uniqueStr = concatinatedData(slaveObj.ip, slaveObj.port);
@@ -84,6 +85,8 @@ public class MasterBot implements Runnable {
 		String concatinate = ip+port;
 		return concatinate;
 	}
+
+
 
 	public static void slaveConnect(String ip, String portNum){
 		String uniqueKey = concatinatedData(ip, portNum);
@@ -129,7 +132,7 @@ public class MasterBot implements Runnable {
 		}
 	}
 
-	public static void listSlaves (){
+	public static void listSlaves(){
 		//	Set set = slaveDataMap.entrySet();
 		Iterator<Entry<String, SlaveData>> iter = slaveDataMap.entrySet().iterator();
 		while (iter.hasNext()) {
@@ -216,8 +219,10 @@ public class MasterBot implements Runnable {
 		new Thread(new MasterBot()).start();
 
 		Scanner scanner = new Scanner(System.in);
-		System.out.print("> ");
-		while (scanner.hasNext()){
+
+		System.out.print(">");
+		while (!scanner.hasNext("quit")){
+			System.out.print(">");
 			String command = scanner.nextLine();
 			if (command.startsWith("list")){
 				listSlaves();
@@ -225,6 +230,7 @@ public class MasterBot implements Runnable {
 			else if (command.startsWith("connect") || command.startsWith("disconnect")){
 				System.out.println("going to connect/disconnect  the slave");
 				checkSlaveIP(command);
+
 			}
 			System.out.print("> ");
 		}
