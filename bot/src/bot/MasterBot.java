@@ -54,6 +54,7 @@ public class MasterBot implements Runnable {
 		}
 		catch (Exception e){
 			System.out.println(e);
+			System.exit(-1);
 		}
 	}
 
@@ -80,24 +81,9 @@ public class MasterBot implements Runnable {
 	}
 
 	public static String concatinatedData(String ip, String port){
-		String concatinate = ip;
+		String concatinate = ip+port;
 		return concatinate;
 	}
-
-
-	public static void listSlaves (){
-	//	Set set = slaveDataMap.entrySet();
-		Iterator<Entry<String, SlaveData>> iter = slaveDataMap.entrySet().iterator();
-		while (iter.hasNext()) {
-			Entry<String, SlaveData> entry = iter.next();
-			SlaveData localObjSlave = entry.getValue();
-			Date date = new Date();
-			if (localObjSlave.status == flag.registred){
-				System.out.print(localObjSlave.ip + "\t" + localObjSlave.port + "\t" + localObjSlave.registerDate.format(date));
-			}
-		}
-	}
-
 
 	public static void slaveConnect(String ip, String portNum){
 		String uniqueKey = concatinatedData(ip, portNum);
@@ -143,6 +129,79 @@ public class MasterBot implements Runnable {
 		}
 	}
 
+	public static void listSlaves (){
+		//	Set set = slaveDataMap.entrySet();
+		Iterator<Entry<String, SlaveData>> iter = slaveDataMap.entrySet().iterator();
+		while (iter.hasNext()) {
+			Entry<String, SlaveData> entry = iter.next();
+			SlaveData localObjSlave = entry.getValue();
+			Date date = new Date();
+			if (localObjSlave.status == flag.registred){
+				System.out.print(localObjSlave.ip + "\t" + localObjSlave.port + "\t" + localObjSlave.registerDate.format(date) + "\n");
+			}
+		}
+	}
+
+	public static void checkSlaveIP(String command){
+		String delims = " ";
+		StringTokenizer st = new StringTokenizer(command, delims);
+		String givenCommand = (String)st.nextElement();
+		String slaveIp = (String) st.nextElement();
+		String targetIP = (String) st.nextElement();
+		String targetPort = (String) st.nextElement();
+		String numConnect = (String) st.nextElement();
+		//SlaveData newObj = new SlaveData(givenCommand, slaveIp);
+
+
+		if(slaveIp == "all")
+		{
+			for (Entry<String, SlaveData> entry : slaveDataMap.entrySet()){
+
+				SlaveData newObj1 = entry.getValue();
+				String ip = newObj1.ip;
+				String port = newObj1.port;
+				Integer portInt = Integer.parseInt(port);
+				try{
+					Socket sendData = new Socket(ip, portInt);
+					PrintWriter out = new PrintWriter(sendData.getOutputStream(), true);
+					command.replaceAll(slaveIp, "");
+					out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect);
+					out.println();
+					System.out.println("Sending data to all the slaves");
+				}
+				catch(Exception e){
+					System.out.println("Socket could not be created");
+					System.exit(-1);
+				}
+			}
+		}
+		else{
+			for (Entry<String, SlaveData> entry : slaveDataMap.entrySet()){
+				if (entry.getKey().startsWith(slaveIp)){
+					SlaveData newObj1 = entry.getValue();
+					String ip = newObj1.ip;
+					String port = newObj1.port;
+					Integer portInt = Integer.parseInt(port);
+					try{
+						Socket sendData = new Socket(ip, portInt);
+						PrintWriter out = new PrintWriter(sendData.getOutputStream(), true);
+						command.replaceAll(slaveIp, "");
+						out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect);
+						out.println();
+						System.out.println("Sending data to one slave");
+					}
+					catch(Exception e){
+						System.out.println("Socket could not be created");
+						System.exit(-1);
+					}
+				}
+				else{
+					System.out.println("The given slave does not exist");
+				}
+			}
+		}
+	}
+
 
 	public static void main(String[] args) throws Exception {
 
@@ -158,60 +217,17 @@ public class MasterBot implements Runnable {
 
 		Scanner scanner = new Scanner(System.in);
 		System.out.print("> ");
-		while (!scanner.hasNext("quit")){
-			System.out.print("> ");
+		while (scanner.hasNext()){
 			String command = scanner.nextLine();
 			if (command.startsWith("list")){
 				listSlaves();
 			}
 			else if (command.startsWith("connect") || command.startsWith("disconnect")){
 				System.out.println("going to connect/disconnect  the slave");
-				sendToSlave(command);
+				checkSlaveIP(command);
 			}
-		
+			System.out.print("> ");
 		}
 		scanner.close();
-
 	}
-
-	public static void sendToSlave(String command){
-		String delims = " ";
-		StringTokenizer st = new StringTokenizer(command, delims);
-		String givenCommand = (String)st.nextElement();
-		String slaveIp = (String) st.nextElement();
-		String targetIP = (String) st.nextElement();
-		String targetPort = (String) st.nextElement();
-		String numConnect = (String) st.nextElement();
-		//SlaveData newObj = new SlaveData(givenCommand, slaveIp);
-		
-		if(slaveDataMap.containsKey(slaveIp)){
-			SlaveData newObj1 = slaveDataMap.get(slaveIp);
-			String port1 = newObj1.port;
-			String ip = newObj1.ip;
-			Integer port1Int = Integer.parseInt(port1);
-			try{
-			Socket sendData = new Socket(ip, port1Int);
-			PrintWriter out = new PrintWriter(sendData.getOutputStream(), true);
-			command.replaceAll(slaveIp, "");
-			out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect);
-			
-			out.println();
-			}
-			catch(Exception e){
-				System.out.println("Socket could not be created");
-				System.exit(-1);
-			}
-		}
-		
-	}
-
-	
 }
-
-
-
-
-
-
-
-
