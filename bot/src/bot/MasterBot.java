@@ -51,7 +51,6 @@ public class MasterBot implements Runnable {
 		}
 		catch (Exception e){
 			System.out.println(e);
-			System.exit(-1);
 		}
 	}
 
@@ -128,8 +127,7 @@ public class MasterBot implements Runnable {
 							//System.out.println("Sending data to all the slaves");
 						}
 						catch(Exception e){
-							System.out.println("Socket could not be created");
-							System.exit(-1);
+							System.out.println(e);
 						}
 					}
 				}
@@ -149,8 +147,7 @@ public class MasterBot implements Runnable {
 								//System.out.println("Sending data to one slave");
 							}
 							catch(Exception e){
-								System.out.println("Socket could not be created");
-								System.exit(-1);
+								System.out.println(e);
 							}
 						}
 						else{
@@ -179,14 +176,14 @@ public class MasterBot implements Runnable {
 								command.replaceAll(slaveIp, "");
 								out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect + " " + keepAliveOrUrl);
 								out.println();
-								System.out.println("Sending data to all the slaves");
+								//System.out.println("Sending data to all the slaves");
 							}
 							catch(Exception e){
-								System.out.println("Socket could not be created");
+								System.out.println(e);
 							}
 						}
 					}
-					
+
 					else{
 						for (Entry<String, SlaveData> entry : slaveDataMap.entrySet()){
 							if (entry.getKey().startsWith(slaveIp)){
@@ -201,10 +198,10 @@ public class MasterBot implements Runnable {
 									command.replaceAll(slaveIp, "");
 									out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect + " " + keepAliveOrUrl);
 									out.println();
-									System.out.println("Sending data to one slave");
+									//System.out.println("Sending data to one slave");
 								}
 								catch(Exception e){
-									System.out.println("Socket could not be created");
+									System.out.println(e);
 								}
 							}
 							else{
@@ -213,7 +210,7 @@ public class MasterBot implements Runnable {
 						}
 					}
 				}
-				
+
 				else{
 					numConnect = toCheck;
 					keepAliveOrUrl = null;
@@ -231,10 +228,10 @@ public class MasterBot implements Runnable {
 								command.replaceAll(slaveIp, "");
 								out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect + " " + keepAliveOrUrl );
 								out.println();
-								System.out.println("Sending data to all the slaves");
+								//System.out.println("Sending data to all the slaves");
 							}
 							catch(Exception e){
-								System.out.println("Socket could not be created");
+								System.out.println(e);
 							}
 						}
 					}
@@ -252,10 +249,10 @@ public class MasterBot implements Runnable {
 									command.replaceAll(slaveIp, "");
 									out.println(givenCommand + " " + targetIP + " " + targetPort + " " + numConnect + " " + keepAliveOrUrl);
 									out.println();
-									System.out.println("Sending data to one slave");
+									//System.out.println("Sending data to one slave");
 								}
 								catch(Exception e){
-									System.out.println("Socket could not be created");
+									System.out.println(e);
 								}
 							}
 							else{
@@ -265,7 +262,7 @@ public class MasterBot implements Runnable {
 					}
 				}
 			}
-			
+
 			else if(numElements == 6){
 				numConnect = (String) st.nextElement();
 				keepAliveOrUrl = (String) st.nextElement();
@@ -286,8 +283,7 @@ public class MasterBot implements Runnable {
 							//System.out.println("Sending data to all the slaves");
 						}
 						catch(Exception e){
-							System.out.println("Socket could not be created");
-							System.exit(-1);
+							System.out.println(e);
 						}
 					}
 				}
@@ -307,8 +303,7 @@ public class MasterBot implements Runnable {
 								//System.out.println("Sending data to one slave");
 							}
 							catch(Exception e){
-								System.out.println("Socket could not be created");
-								System.exit(-1);
+								System.out.println(e);
 							}
 						}
 						else{
@@ -336,11 +331,10 @@ public class MasterBot implements Runnable {
 						PrintWriter out = new PrintWriter(sendData.getOutputStream(), true);
 						out.println(givenCommand + " " + targetIP + " " + targetPort);
 						out.println();
-						System.out.println("Sending data to all the slaves");
+						//System.out.println("Sending data to all the slaves");
 					}
 					catch(Exception e){
-						System.out.println("Socket could not be created");
-						System.exit(-1);
+						System.out.println(e);
 					}
 				}
 			}
@@ -356,11 +350,10 @@ public class MasterBot implements Runnable {
 							PrintWriter out = new PrintWriter(sendData.getOutputStream(), true);
 							out.println(givenCommand + " " + targetIP + " " + targetPort);
 							out.println();
-							System.out.println("Sending data to one slave");
+							//System.out.println("Sending data to one slave");
 						}
 						catch(Exception e){
-							System.out.println("Socket could not be created");
-							System.exit(-1);
+							System.out.println(e);
 						}
 					}
 					else{
@@ -369,7 +362,6 @@ public class MasterBot implements Runnable {
 				}
 			}
 		}
-
 	}
 
 
@@ -394,13 +386,13 @@ public class MasterBot implements Runnable {
 				listSlaves();
 			}
 			else if (command.startsWith("connect") || command.startsWith("disconnect")){
-				System.out.println("going to connect/disconnect  the slave");
+				//System.out.println("going to connect/disconnect  the slave");
 				checkGivenCommand(command);
 			}
 			else {
 				System.out.println("Invalid command");
 			}
-			System.out.print("> ");
+			System.out.print(">");
 		}
 		scanner.close();
 	}

